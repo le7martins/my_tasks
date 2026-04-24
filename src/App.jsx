@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import TaskList from './components/TaskList'
 import TaskForm from './components/TaskForm'
@@ -11,6 +11,16 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedStatus, setSelectedStatus] = useState('pending')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('theme')
+    if (saved) return saved === 'dark'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark)
+    localStorage.setItem('theme', dark ? 'dark' : 'light')
+  }, [dark])
 
   const categories = [...new Set(tasks.map(t => t.category).filter(Boolean))].sort()
 
@@ -29,11 +39,8 @@ export default function App() {
   }
 
   function handleSubmit(data) {
-    if (editingTask) {
-      updateTask(editingTask.id, data)
-    } else {
-      addTask(data)
-    }
+    if (editingTask) updateTask(editingTask.id, data)
+    else addTask(data)
     setShowForm(false)
     setEditingTask(null)
   }
@@ -81,14 +88,18 @@ export default function App() {
           <div className="main-header-info">
             <h1 className="main-title">{title}</h1>
             <p className="main-subtitle">
-              {pendingCount === 0
-                ? 'Tudo em dia ✓'
-                : `${pendingCount} pendente${pendingCount > 1 ? 's' : ''}`}
+              {pendingCount === 0 ? 'Tudo em dia ✓' : `${pendingCount} pendente${pendingCount > 1 ? 's' : ''}`}
             </p>
           </div>
-          <button className="btn-add" onClick={() => setShowForm(true)} aria-label="Nova tarefa">
-            +
+          <button
+            className="btn-theme"
+            onClick={() => setDark(d => !d)}
+            aria-label="Alternar tema"
+            title={dark ? 'Modo claro' : 'Modo escuro'}
+          >
+            {dark ? '☀️' : '🌙'}
           </button>
+          <button className="btn-add" onClick={() => setShowForm(true)} aria-label="Nova tarefa">+</button>
         </div>
 
         <TaskList
