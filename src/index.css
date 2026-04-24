@@ -39,10 +39,8 @@ html.dark {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  height: 100dvh;
-  overflow: hidden;
+  background: var(--bg); color: var(--text);
+  height: 100dvh; overflow: hidden;
   -webkit-font-smoothing: antialiased;
   transition: background .2s, color .2s;
 }
@@ -50,20 +48,13 @@ body {
 #root { height: 100dvh; }
 
 /* ── Layout ── */
-.app {
-  display: flex;
-  height: 100dvh;
-  position: relative;
-  overflow: hidden;
-}
+.app { display: flex; height: 100dvh; position: relative; overflow: hidden; }
 
 /* ── Sidebar ── */
 .sidebar {
-  width: 270px;
-  min-width: 270px;
+  width: 270px; min-width: 270px;
   background: var(--sidebar-bg);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   overflow-y: auto;
   transition: transform .28s cubic-bezier(.4,0,.2,1), background .2s;
   z-index: 300;
@@ -71,34 +62,26 @@ body {
 }
 
 .sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.6);
-  z-index: 299;
-  backdrop-filter: blur(2px);
-  animation: fadeIn .2s ease;
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.6); z-index: 299;
+  backdrop-filter: blur(2px); animation: fadeIn .2s ease;
 }
-@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
 
 .sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: flex; align-items: center; gap: 10px;
   padding: 22px 18px 20px;
   border-bottom: 1px solid rgba(255,255,255,.06);
+  flex-shrink: 0;
 }
 .sidebar-logo-icon {
-  width: 36px; height: 36px;
-  background: var(--primary);
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; background: var(--primary);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
   font-size: 17px; font-weight: 700; color: #fff; flex-shrink: 0;
 }
 .sidebar-logo-text { font-size: 17px; font-weight: 700; color: #fff; flex: 1; }
 .sidebar-close {
-  display: none;
-  background: transparent; border: none;
+  display: none; background: transparent; border: none;
   color: rgba(255,255,255,.4); font-size: 24px; cursor: pointer;
   width: 36px; height: 36px; align-items: center; justify-content: center;
   border-radius: 8px; transition: background .15s;
@@ -106,12 +89,25 @@ body {
 .sidebar-close:hover { background: rgba(255,255,255,.1); color: #fff; }
 
 .sidebar-nav { padding: 8px 10px 24px; flex: 1; }
+
 .sidebar-section-title {
+  display: flex; align-items: center; justify-content: space-between;
   font-size: 10px; font-weight: 700;
   text-transform: uppercase; letter-spacing: .12em;
-  color: rgba(255,255,255,.2);
+  color: rgba(255,255,255,.25);
   padding: 16px 10px 6px;
 }
+
+.sidebar-edit-btn {
+  background: transparent; border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.5); font-size: 10px; font-weight: 600;
+  cursor: pointer; border-radius: 6px; padding: 3px 8px;
+  text-transform: none; letter-spacing: 0;
+  transition: all .15s;
+}
+.sidebar-edit-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+.sidebar-edit-btn.active { background: rgba(99,102,241,.4); border-color: var(--primary); color: #fff; }
+
 .sidebar-item {
   display: flex; align-items: center; gap: 9px;
   width: 100%; padding: 10px;
@@ -130,6 +126,75 @@ body {
   padding: 2px 8px; border-radius: 20px; min-width: 24px; text-align: center;
 }
 
+/* ── Category cards grid ── */
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  padding: 6px 0 4px;
+}
+
+.category-card {
+  position: relative;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 11px;
+  padding: 11px 10px 9px;
+  cursor: pointer; text-align: left;
+  transition: all .15s;
+  min-height: 70px;
+}
+.category-card:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.15); }
+.category-card.active { font-weight: 600; }
+
+.category-card-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-bottom: 7px;
+}
+.category-card-name {
+  font-size: 12px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.category-card-count {
+  font-size: 10px; color: rgba(255,255,255,.4);
+  margin-top: 3px;
+}
+
+.category-card-remove {
+  position: absolute; top: 5px; right: 5px;
+  width: 18px; height: 18px;
+  background: rgba(239,68,68,.75); border: none; border-radius: 50%;
+  color: #fff; font-size: 14px; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.category-card-remove:hover { background: #ef4444; }
+
+/* Add new category card */
+.category-card-add {
+  cursor: default;
+  display: flex; flex-direction: column;
+  justify-content: center; gap: 6px;
+  padding: 8px;
+}
+.category-add-input {
+  width: 100%; background: transparent;
+  border: none; outline: none;
+  font-size: 12px; color: #fff; font-family: inherit;
+  padding: 2px 0;
+}
+.category-add-input::placeholder { color: rgba(255,255,255,.3); }
+.category-add-confirm {
+  align-self: flex-start;
+  background: rgba(99,102,241,.5); border: none;
+  border-radius: 5px; color: #fff;
+  font-size: 13px; cursor: pointer;
+  padding: 2px 8px; transition: background .15s;
+}
+.category-add-confirm:hover { background: var(--primary); }
+
 /* ── Main ── */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
@@ -141,14 +206,11 @@ body {
   min-height: 64px;
   transition: background .2s, border-color .2s;
 }
-
 .hamburger {
-  display: none; flex-direction: column;
-  justify-content: center; gap: 5px;
+  display: none; flex-direction: column; justify-content: center; gap: 5px;
   background: transparent; border: none; cursor: pointer;
   padding: 6px; border-radius: 8px;
-  width: 40px; height: 40px; flex-shrink: 0;
-  transition: background .15s;
+  width: 40px; height: 40px; flex-shrink: 0; transition: background .15s;
 }
 .hamburger:hover { background: var(--bg); }
 .hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
@@ -162,10 +224,8 @@ body {
 
 .btn-theme {
   width: 38px; height: 38px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg);
-  cursor: pointer; font-size: 16px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--bg); cursor: pointer; font-size: 16px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; transition: all .15s;
 }
@@ -203,23 +263,19 @@ body {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
+  box-shadow: var(--shadow); overflow: hidden;
   transition: box-shadow .2s, background .2s, border-color .2s;
 }
-.task-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.15); }
+.task-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.12); }
 .task-card.completed { opacity: .5; }
 .task-card.overdue { border-left: 3px solid var(--danger); }
 
-.task-card-main {
-  display: flex; align-items: flex-start;
-  gap: 12px; padding: 14px;
-}
+.task-card-main { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
 
 .task-check {
   width: 24px; height: 24px; min-width: 24px;
-  border: 2px solid var(--border);
-  border-radius: 7px; background: transparent; cursor: pointer;
+  border: 2px solid var(--border); border-radius: 7px;
+  background: transparent; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 700; color: #fff;
   transition: all .15s; margin-top: 1px; flex-shrink: 0;
@@ -232,11 +288,7 @@ body {
 .task-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .task-title { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.4; word-break: break-word; }
 .task-card.completed .task-title { text-decoration: line-through; color: var(--text-muted); }
-
-.task-category {
-  font-size: 11px; font-weight: 600;
-  padding: 2px 9px; border-radius: 20px; white-space: nowrap;
-}
+.task-category { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; white-space: nowrap; }
 .task-description {
   font-size: 13px; color: var(--text-muted);
   margin-top: 4px; line-height: 1.5;
@@ -258,12 +310,10 @@ body {
 .task-action-btn.danger:hover { background: rgba(239,68,68,.15); color: var(--danger); }
 
 .subtask-list {
-  list-style: none;
-  border-top: 1px solid var(--border);
+  list-style: none; border-top: 1px solid var(--border);
   padding: 10px 14px 12px 50px;
   display: flex; flex-direction: column; gap: 8px;
-  background: var(--subtask-bg);
-  transition: background .2s;
+  background: var(--subtask-bg); transition: background .2s;
 }
 .subtask-item { display: flex; align-items: center; gap: 10px; }
 .subtask-title { font-size: 13px; color: var(--text); }
@@ -271,31 +321,26 @@ body {
 
 /* ── Buttons ── */
 .btn-primary {
-  background: var(--primary); color: #fff;
-  border: none; border-radius: 10px;
-  padding: 11px 20px; font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: background .15s;
-  white-space: nowrap; min-height: 44px;
+  background: var(--primary); color: #fff; border: none;
+  border-radius: 10px; padding: 11px 20px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: background .15s; white-space: nowrap; min-height: 44px;
 }
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
-
 .btn-secondary {
   background: transparent; color: var(--text-muted);
-  border: 1.5px solid var(--border);
-  border-radius: 10px; padding: 11px 20px;
-  font-size: 14px; font-weight: 500; cursor: pointer;
-  transition: all .15s; min-height: 44px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 11px 20px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .15s; min-height: 44px;
 }
 .btn-secondary:hover { background: var(--bg); color: var(--text); }
 
 /* ── Modal ── */
 .modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.6);
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
   display: flex; align-items: flex-end; justify-content: center;
-  z-index: 400; backdrop-filter: blur(4px);
-  animation: fadeIn .18s ease;
+  z-index: 400; backdrop-filter: blur(4px); animation: fadeIn .18s ease;
 }
 .modal {
   background: var(--card-bg);
@@ -309,22 +354,13 @@ body {
   from { transform: translateY(60px); opacity: 0; }
   to   { transform: translateY(0); opacity: 1; }
 }
-.modal-handle {
-  width: 40px; height: 4px;
-  background: var(--border);
-  border-radius: 2px; margin: 12px auto 0;
-}
-.modal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px 0;
-}
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 0; }
 .modal-header h2 { font-size: 17px; font-weight: 700; color: var(--text); }
 .modal-close {
-  width: 32px; height: 32px; border: none;
-  border-radius: 8px; background: var(--bg);
-  cursor: pointer; font-size: 20px; color: var(--text-muted);
-  display: flex; align-items: center; justify-content: center;
-  transition: all .15s;
+  width: 32px; height: 32px; border: none; border-radius: 8px;
+  background: var(--bg); cursor: pointer; font-size: 20px; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
 }
 .modal-close:hover { background: var(--border); color: var(--text); }
 
@@ -333,28 +369,23 @@ body {
 .form-group { display: flex; flex-direction: column; gap: 5px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-label { font-size: 12.5px; font-weight: 600; color: var(--text); }
-
 .form-input {
   width: 100%; padding: 11px 13px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px; font-size: 15px;
-  color: var(--text); background: var(--input-bg);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 15px; color: var(--text); background: var(--input-bg);
   outline: none; transition: border-color .15s, background .2s;
   font-family: inherit; min-height: 44px;
 }
 .form-input:focus { border-color: var(--primary); }
 .form-textarea { resize: vertical; min-height: 80px; }
 .form-select { cursor: pointer; }
-
-/* dark mode: select/option background */
 html.dark .form-select option { background: var(--card-bg); color: var(--text); }
 
 .subtask-form-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
 .subtask-form-item {
   display: flex; align-items: center; gap: 8px;
   background: var(--bg); border-radius: 9px;
-  padding: 4px 4px 4px 12px; min-height: 44px;
-  transition: background .2s;
+  padding: 4px 4px 4px 12px; min-height: 44px; transition: background .2s;
 }
 .subtask-form-input {
   flex: 1; border: none; background: transparent;
@@ -368,18 +399,15 @@ html.dark .form-select option { background: var(--card-bg); color: var(--text); 
   border-radius: 7px; transition: all .15s; flex-shrink: 0;
 }
 .subtask-remove:hover { background: rgba(239,68,68,.15); color: var(--danger); }
-
 .subtask-add-row { display: flex; gap: 8px; }
 .btn-add-subtask {
-  width: 44px; height: 44px;
-  border: 1.5px solid var(--border);
+  width: 44px; height: 44px; border: 1.5px solid var(--border);
   border-radius: 10px; background: var(--card-bg);
   cursor: pointer; font-size: 22px; color: var(--primary);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; transition: all .15s;
 }
 .btn-add-subtask:hover { background: var(--primary-light); border-color: var(--primary); }
-
 .form-actions {
   display: flex; gap: 10px;
   padding-top: 6px; border-top: 1px solid var(--border); margin-top: 4px;
@@ -392,7 +420,7 @@ html.dark .form-select option { background: var(--card-bg); color: var(--text); 
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-/* ══ Mobile < 768px ══ */
+/* ══ Mobile ══ */
 @media (max-width: 767px) {
   .sidebar {
     position: fixed; top: 0; left: 0; height: 100dvh;
@@ -407,7 +435,7 @@ html.dark .form-select option { background: var(--card-bg); color: var(--text); 
   .task-actions { opacity: 1; }
 }
 
-/* ══ Desktop >= 768px ══ */
+/* ══ Desktop ══ */
 @media (min-width: 768px) {
   .sidebar { transform: none; position: relative; }
   .sidebar-close { display: none; }

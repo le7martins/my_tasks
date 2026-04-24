@@ -3,9 +3,11 @@ import Sidebar from './components/Sidebar'
 import TaskList from './components/TaskList'
 import TaskForm from './components/TaskForm'
 import { useTasks } from './hooks/useTasks'
+import { useCategories } from './hooks/useCategories'
 
 export default function App() {
   const { tasks, addTask, updateTask, deleteTask, toggleTask, toggleSubtask } = useTasks()
+  const { categories, addCategory, removeCategory } = useCategories()
   const [showForm, setShowForm] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -22,8 +24,6 @@ export default function App() {
     localStorage.setItem('theme', dark ? 'dark' : 'light')
   }, [dark])
 
-  const categories = [...new Set(tasks.map(t => t.category).filter(Boolean))].sort()
-
   const filteredTasks = tasks.filter(task => {
     const catMatch = selectedCategory === 'all' || task.category === selectedCategory
     const statusMatch =
@@ -39,6 +39,9 @@ export default function App() {
   }
 
   function handleSubmit(data) {
+    if (data.category && !categories.includes(data.category)) {
+      addCategory(data.category)
+    }
     if (editingTask) updateTask(editingTask.id, data)
     else addTask(data)
     setShowForm(false)
@@ -60,6 +63,11 @@ export default function App() {
     setSidebarOpen(false)
   }
 
+  function handleRemoveCategory(name) {
+    removeCategory(name)
+    if (selectedCategory === name) setSelectedCategory('all')
+  }
+
   const pendingCount = filteredTasks.filter(t => !t.completed).length
   const title = selectedCategory === 'all' ? 'Todas as Tarefas' : selectedCategory
 
@@ -78,6 +86,8 @@ export default function App() {
         tasks={tasks}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onAddCategory={addCategory}
+        onRemoveCategory={handleRemoveCategory}
       />
 
       <main className="main">
