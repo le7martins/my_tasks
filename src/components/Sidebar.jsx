@@ -13,7 +13,11 @@ const STATUSES = [
   { key: 'all', label: 'Todas', icon: '≡' },
 ]
 
-export default function Sidebar({ categories, selectedCategory, onSelectCategory, selectedStatus, onSelectStatus, tasks }) {
+export default function Sidebar({
+  categories, selectedCategory, onSelectCategory,
+  selectedStatus, onSelectStatus,
+  tasks, isOpen, onClose
+}) {
   function countStatus(key) {
     if (key === 'all') return tasks.length
     if (key === 'pending') return tasks.filter(t => !t.completed).length
@@ -21,10 +25,11 @@ export default function Sidebar({ categories, selectedCategory, onSelectCategory
   }
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${isOpen ? ' open' : ''}`}>
       <div className="sidebar-logo">
-        <span className="sidebar-logo-icon">✓</span>
+        <div className="sidebar-logo-icon">✓</div>
         <span className="sidebar-logo-text">MyTasks</span>
+        <button className="sidebar-close" onClick={onClose} aria-label="Fechar menu">×</button>
       </div>
 
       <nav className="sidebar-nav">
@@ -32,7 +37,7 @@ export default function Sidebar({ categories, selectedCategory, onSelectCategory
         {STATUSES.map(s => (
           <button
             key={s.key}
-            className={`sidebar-item ${selectedStatus === s.key ? 'active' : ''}`}
+            className={`sidebar-item${selectedStatus === s.key ? ' active' : ''}`}
             onClick={() => onSelectStatus(s.key)}
           >
             <span className="sidebar-item-icon">{s.icon}</span>
@@ -43,7 +48,7 @@ export default function Sidebar({ categories, selectedCategory, onSelectCategory
 
         <div className="sidebar-section-title">Categorias</div>
         <button
-          className={`sidebar-item ${selectedCategory === 'all' ? 'active' : ''}`}
+          className={`sidebar-item${selectedCategory === 'all' ? ' active' : ''}`}
           onClick={() => onSelectCategory('all')}
         >
           <span className="sidebar-item-dot" style={{ background: '#94a3b8' }} />
@@ -53,14 +58,12 @@ export default function Sidebar({ categories, selectedCategory, onSelectCategory
         {categories.map(cat => (
           <button
             key={cat}
-            className={`sidebar-item ${selectedCategory === cat ? 'active' : ''}`}
+            className={`sidebar-item${selectedCategory === cat ? ' active' : ''}`}
             onClick={() => onSelectCategory(cat)}
           >
             <span className="sidebar-item-dot" style={{ background: getCategoryColor(cat) }} />
             <span className="sidebar-item-label">{cat}</span>
-            <span className="sidebar-item-count">
-              {tasks.filter(t => t.category === cat).length}
-            </span>
+            <span className="sidebar-item-count">{tasks.filter(t => t.category === cat).length}</span>
           </button>
         ))}
       </nav>

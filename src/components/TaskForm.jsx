@@ -36,10 +36,7 @@ export default function TaskForm({ task, categories, onSubmit, onClose }) {
   }
 
   function handleSubtaskKeyDown(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      addSubtask()
-    }
+    if (e.key === 'Enter') { e.preventDefault(); addSubtask() }
   }
 
   function handleSubmit(e) {
@@ -59,6 +56,7 @@ export default function TaskForm({ task, categories, onSubmit, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
         <div className="modal-header">
           <h2>{task ? 'Editar Tarefa' : 'Nova Tarefa'}</h2>
           <button className="modal-close" onClick={onClose} aria-label="Fechar">×</button>
@@ -87,9 +85,7 @@ export default function TaskForm({ task, categories, onSubmit, onClose }) {
               list="categories-list"
             />
             <datalist id="categories-list">
-              {categories.map(cat => (
-                <option key={cat} value={cat} />
-              ))}
+              {categories.map(cat => <option key={cat} value={cat} />)}
             </datalist>
           </div>
 
@@ -106,35 +102,19 @@ export default function TaskForm({ task, categories, onSubmit, onClose }) {
 
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Data de Vencimento</label>
-              <input
-                className="form-input"
-                type="date"
-                value={dueDate}
-                onChange={e => setDueDate(e.target.value)}
-              />
+              <label className="form-label">Vencimento</label>
+              <input className="form-input" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
             </div>
             <div className="form-group">
               <label className="form-label">Horário</label>
-              <input
-                className="form-input"
-                type="time"
-                value={dueTime}
-                onChange={e => setDueTime(e.target.value)}
-              />
+              <input className="form-input" type="time" value={dueTime} onChange={e => setDueTime(e.target.value)} />
             </div>
           </div>
 
           <div className="form-group">
             <label className="form-label">Recorrência</label>
-            <select
-              className="form-input form-select"
-              value={recurrence}
-              onChange={e => setRecurrence(e.target.value)}
-            >
-              {RECURRENCE_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
+            <select className="form-input form-select" value={recurrence} onChange={e => setRecurrence(e.target.value)}>
+              {RECURRENCE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
           </div>
 
@@ -149,14 +129,7 @@ export default function TaskForm({ task, categories, onSubmit, onClose }) {
                       value={sub.title}
                       onChange={e => updateSubtaskTitle(sub.id, e.target.value)}
                     />
-                    <button
-                      type="button"
-                      className="subtask-remove"
-                      onClick={() => removeSubtask(sub.id)}
-                      aria-label="Remover"
-                    >
-                      ×
-                    </button>
+                    <button type="button" className="subtask-remove" onClick={() => removeSubtask(sub.id)} aria-label="Remover">×</button>
                   </li>
                 ))}
               </ul>
@@ -174,11 +147,9 @@ export default function TaskForm({ task, categories, onSubmit, onClose }) {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancelar
-            </button>
+            <button type="button" className="btn-secondary" onClick={onClose}>Cancelar</button>
             <button type="submit" className="btn-primary" disabled={!title.trim()}>
-              {task ? 'Salvar Alterações' : 'Criar Tarefa'}
+              {task ? 'Salvar' : 'Criar Tarefa'}
             </button>
           </div>
         </form>
