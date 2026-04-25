@@ -20,16 +20,19 @@ export function useTasks() {
   }, [tasks])
 
   function addTask(data) {
-    setTasks(prev => [{
+    const newTask = {
       id: genId(),
       titulo: data.titulo,
       data: data.data,
       prioridade: data.prioridade || 'media',
       status: 'pendente',
       descricao: data.descricao || '',
+      googleEventId: null,
       concluidoEm: null,
       criadoEm: new Date().toISOString(),
-    }, ...prev])
+    }
+    setTasks(prev => [newTask, ...prev])
+    return newTask
   }
 
   function updateTask(id, data) {
@@ -40,6 +43,10 @@ export function useTasks() {
       prioridade: data.prioridade,
       descricao: data.descricao || '',
     }))
+  }
+
+  function patchTask(id, patch) {
+    setTasks(prev => prev.map(t => t.id !== id ? t : { ...t, ...patch }))
   }
 
   function deleteTask(id) {
@@ -58,5 +65,9 @@ export function useTasks() {
     }))
   }
 
-  return { tasks, addTask, updateTask, deleteTask, toggleTask }
+  function importTasks(imported) {
+    setTasks(imported)
+  }
+
+  return { tasks, addTask, updateTask, patchTask, deleteTask, toggleTask, importTasks }
 }

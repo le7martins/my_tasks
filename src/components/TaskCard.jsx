@@ -6,8 +6,18 @@ const PRIORITY_CONFIG = {
   baixa: { label: 'Baixa', cls: 'priority-baixa' },
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return ''
+function getRelativeDate(dateStr) {
+  const now      = new Date()
+  now.setHours(0, 0, 0, 0)
+  const taskDate = new Date(dateStr + 'T00:00:00')
+  const diff     = Math.round((taskDate - now) / 86400000)
+
+  if (diff === 0)  return 'Hoje'
+  if (diff === 1)  return 'Amanhã'
+  if (diff === -1) return 'Ontem'
+  if (diff > 1 && diff <= 7) return `Em ${diff} dias`
+  if (diff < -1)  return `Atrasado há ${Math.abs(diff)} dia${Math.abs(diff) !== 1 ? 's' : ''}`
+
   const [y, m, d] = dateStr.split('-')
   return `${d}/${m}/${y}`
 }
@@ -27,10 +37,11 @@ export default function TaskCard({ task, onToggle, onDelete, onEdit }) {
   const isCompleted = task.status === 'concluido'
   const isOverdue   = !isCompleted && task.data < getToday()
   const priority    = PRIORITY_CONFIG[task.prioridade] || PRIORITY_CONFIG.media
+  const dateLabel   = getRelativeDate(task.data)
 
   const cardClass = [
     'task-card',
-    entering   ? 'entering'  : '',
+    entering    ? 'entering'  : '',
     isCompleted ? 'completed' : '',
     isOverdue   ? 'overdue'   : '',
   ].filter(Boolean).join(' ')
@@ -55,7 +66,7 @@ export default function TaskCard({ task, onToggle, onDelete, onEdit }) {
             )}
             <div className="task-meta-row">
               <span className={`task-date${isOverdue ? ' overdue' : ''}`}>
-                {isOverdue ? '⚠' : '📅'} {formatDate(task.data)}
+                {isOverdue ? '⚠' : '📅'} {dateLabel}
               </span>
               <span className={`priority-badge ${priority.cls}`}>
                 {priority.label}
