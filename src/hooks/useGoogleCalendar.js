@@ -49,7 +49,7 @@ export function useGoogleCalendar() {
   const tokenRef      = useRef(null)
   const tokenClientRef= useRef(null)
 
-  const isConfigured = Boolean(getClientId())
+  const isConfigured = true
 
   function initClient(onSuccess) {
     if (!window.google?.accounts?.oauth2) {
@@ -81,6 +81,10 @@ export function useGoogleCalendar() {
 
   const connect = useCallback((onSuccess) => {
     setError(null)
+    if (!getClientId()) {
+      setError('Client ID não configurado. Adicione VITE_GOOGLE_CLIENT_ID nas secrets do GitHub e faça um novo deploy.')
+      return
+    }
     const tc = tokenClientRef.current || initClient(onSuccess)
     if (tc) tc.requestAccessToken()
   }, [])
