@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
 const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-const STORAGE_KEY = 'my_tasks_v1'
+const STORAGE_KEY = 'my_tasks_v2'
 
 function loadTasks() {
   try {
@@ -22,41 +22,23 @@ export function useTasks() {
   function addTask(data) {
     setTasks(prev => [{
       id: genId(),
-      title: data.title,
-      description: data.description || '',
-      category: data.category || '',
-      dueDate: data.dueDate || '',
-      dueTime: data.dueTime || '',
-      recurrence: data.recurrence || 'none',
-      completed: false,
-      subtasks: (data.subtasks || []).map(s => ({
-        id: s.id || genId(),
-        title: s.title,
-        completed: s.completed || false,
-      })),
-      createdAt: new Date().toISOString(),
+      titulo: data.titulo,
+      data: data.data,
+      prioridade: data.prioridade || 'media',
+      status: 'pendente',
+      descricao: data.descricao || '',
+      concluidoEm: null,
+      criadoEm: new Date().toISOString(),
     }, ...prev])
   }
 
   function updateTask(id, data) {
-    setTasks(prev => prev.map(t => {
-      if (t.id !== id) return t
-      const existingMap = Object.fromEntries(t.subtasks.map(s => [s.id, s]))
-      return {
-        ...t,
-        title: data.title,
-        description: data.description || '',
-        category: data.category || '',
-        dueDate: data.dueDate || '',
-        dueTime: data.dueTime || '',
-        recurrence: data.recurrence || 'none',
-        subtasks: (data.subtasks || []).map(s => ({
-          id: s.id || genId(),
-          title: s.title,
-          completed: existingMap[s.id] ? existingMap[s.id].completed : false,
-        })),
-        updatedAt: new Date().toISOString(),
-      }
+    setTasks(prev => prev.map(t => t.id !== id ? t : {
+      ...t,
+      titulo: data.titulo,
+      data: data.data,
+      prioridade: data.prioridade,
+      descricao: data.descricao || '',
     }))
   }
 
@@ -65,22 +47,16 @@ export function useTasks() {
   }
 
   function toggleTask(id) {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, completed: !t.completed } : t
-    ))
-  }
-
-  function toggleSubtask(taskId, subtaskId) {
     setTasks(prev => prev.map(t => {
-      if (t.id !== taskId) return t
+      if (t.id !== id) return t
+      const concluding = t.status === 'pendente'
       return {
         ...t,
-        subtasks: t.subtasks.map(s =>
-          s.id === subtaskId ? { ...s, completed: !s.completed } : s
-        ),
+        status: concluding ? 'concluido' : 'pendente',
+        concluidoEm: concluding ? new Date().toISOString() : null,
       }
     }))
   }
 
-  return { tasks, addTask, updateTask, deleteTask, toggleTask, toggleSubtask }
+  return { tasks, addTask, updateTask, deleteTask, toggleTask }
 }

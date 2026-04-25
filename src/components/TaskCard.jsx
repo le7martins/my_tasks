@@ -1,135 +1,88 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-const RECURRENCE_LABELS = {
-  none: null,
-  daily: 'Diário',
-  weekly: 'Semanal',
-  monthly: 'Mensal',
-  yearly: 'Anual',
+const PRIORITY_CONFIG = {
+  alta:  { label: 'Alta',  cls: 'priority-alta' },
+  media: { label: 'Média', cls: 'priority-media' },
+  baixa: { label: 'Baixa', cls: 'priority-baixa' },
 }
 
-function getCategoryColor(category) {
-  const colors = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#06b6d4', '#ef4444']
-  let hash = 0
-  for (let i = 0; i < category.length; i++) {
-    hash = category.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return colors[Math.abs(hash) % colors.length]
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  const [y, m, d] = dateStr.split('-')
+  return `${d}/${m}/${y}`
 }
 
-function formatDate(date, time) {
-  if (!date) return null
-  const [year, month, day] = date.split('-')
-  const formatted = `${day}/${month}/${year}`
-  return time ? `${formatted} às ${time}` : formatted
+function getToday() {
+  return new Date().toISOString().slice(0, 10)
 }
 
-function isOverdue(dueDate) {
-  if (!dueDate) return false
-  return new Date(dueDate + 'T23:59:59') < new Date()
-}
+export default function TaskCard({ task, onToggle, onDelete, onEdit }) {
+  const [entering, setEntering] = useState(true)
 
-export default function TaskCard({ task, onEdit, onDelete, onToggle, onToggleSubtask }) {
-  const [expanded, setExpanded] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setEntering(false), 400)
+    return () => clearTimeout(t)
+  }, [])
 
-  const hasSubtasks = task.subtasks && task.subtasks.length > 0
-  const completedSubtasks = hasSubtasks ? task.subtasks.filter(s => s.completed).length : 0
-  const overdue = !task.completed && isOverdue(task.dueDate)
-  const dateStr = formatDate(task.dueDate, task.dueTime)
-  const recurrenceLabel = RECURRENCE_LABELS[task.recurrence]
-  const categoryColor = task.category ? getCategoryColor(task.category) : null
+  const isCompleted = task.status === 'concluido'
+  const isOverdue   = !isCompleted && task.data < getToday()
+  const priority    = PRIORITY_CONFIG[task.prioridade] || PRIORITY_CONFIG.media
+
+  const cardClass = [
+    'task-card',
+    entering   ? 'entering'  : '',
+    isCompleted ? 'completed' : '',
+    isOverdue   ? 'overdue'   : '',
+  ].filter(Boolean).join(' ')
 
   return (
-    <div className={`task-card${task.completed ? ' completed' : ''}${overdue ? ' overdue' : ''}`}>
-      <div className="task-card-main">
-        <button
-          className={`task-check${task.completed ? ' checked' : ''}`}
-          onClick={() => onToggle(task.id)}
-          aria-label="Marcar como concluída"
-        >
-          {task.completed && '✓'}
-        </button>
+    <div className={cardClass}>
+      <div className="task-card-body">
+        <div className="task-main-row">
+          <button
+            key={task.status}
+            className={`task-check${isCompleted ? ' checked' : ''}`}
+            onClick={() => onToggle(task.id)}
+            aria-label={isCompleted ? 'Reabrir tarefa' : 'Marcar como concluída'}
+          >
+            {isCompleted && '✓'}
+          </button>
 
-        <div className="task-content">
-          <div className="task-title-row">
-            <span className="task-title">{task.title}</span>
-            {task.category && (
-              <span
-                className="task-category"
-                style={{
-                  background: categoryColor + '22',
-                  color: categoryColor,
-                  border: `1px solid ${categoryColor}44`,
-                }}
-              >
-                {task.category}
-              </span>
+          <div className="task-content">
+            <span className="task-title">{task.titulo}</span>
+            {task.descricao && (
+              <p className="task-desc">{task.descricao}</p>
             )}
+            <div className="task-meta-row">
+              <span className={`task-date${isOverdue ? ' overdue' : ''}`}>
+                {isOverdue ? '⚠' : '📅'} {formatDate(task.data)}
+              </span>
+              <span className={`priority-badge ${priority.cls}`}>
+                {priority.label}
+              </span>
+            </div>
           </div>
 
-          {task.description && (
-            <p className="task-description">{task.description}</p>
-          )}
-
-          <div className="task-meta">
-            {dateStr && (
-              <span className={`task-meta-item${overdue ? ' overdue-text' : ''}`}>
-                📅 {dateStr}
-              </span>
-            )}
-            {recurrenceLabel && (
-              <span className="task-meta-item">🔄 {recurrenceLabel}</span>
-            )}
-            {hasSubtasks && (
-              <span className="task-meta-item">
-                ☑ {completedSubtasks}/{task.subtasks.length} subtarefas
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="task-actions">
-          {hasSubtasks && (
+          <div className="task-actions">
             <button
               className="task-action-btn"
-              onClick={() => setExpanded(e => !e)}
-              title="Ver subtarefas"
+              onClick={() => onEdit(task)}
+              title="Editar"
+              aria-label="Editar tarefa"
             >
-              {expanded ? '▲' : '▼'}
+              ✏️
             </button>
-          )}
-          <button
-            className="task-action-btn"
-            onClick={() => onEdit(task)}
-            title="Editar"
-          >
-            ✏️
-          </button>
-          <button
-            className="task-action-btn danger"
-            onClick={() => onDelete(task.id)}
-            title="Excluir"
-          >
-            🗑️
-          </button>
+            <button
+              className="task-action-btn danger"
+              onClick={() => onDelete(task.id)}
+              title="Excluir"
+              aria-label="Excluir tarefa"
+            >
+              🗑️
+            </button>
+          </div>
         </div>
       </div>
-
-      {expanded && hasSubtasks && (
-        <ul className="subtask-list">
-          {task.subtasks.map(sub => (
-            <li key={sub.id} className={`subtask-item${sub.completed ? ' completed' : ''}`}>
-              <button
-                className={`task-check small${sub.completed ? ' checked' : ''}`}
-                onClick={() => onToggleSubtask(task.id, sub.id)}
-              >
-                {sub.completed && '✓'}
-              </button>
-              <span className="subtask-title">{sub.title}</span>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   )
 }

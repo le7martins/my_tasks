@@ -1,37 +1,68 @@
-import { useState, useEffect } from 'react'
-import Sidebar from './components/Sidebar'
+import { useState, useEffect, useMemo } from 'react'
 import TaskList from './components/TaskList'
 import TaskForm from './components/TaskForm'
 import { useTasks } from './hooks/useTasks'
-import { useCategories } from './hooks/useCategories'
+
+const PRIORITY_RANK = { alta: 0, media: 1, baixa: 2 }
+
+function getToday() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function isOverdue(task) {
+  return task.status === 'pendente' && task.data < getToday()
+}
 
 export default function App() {
-  const { tasks, addTask, updateTask, deleteTask, toggleTask, toggleSubtask } = useTasks()
-  const { categories, addCategory, removeCategory } = useCategories()
-  const [showForm, setShowForm] = useState(false)
+  const { tasks, addTask, updateTask, deleteTask, toggleTask } = useTasks()
+  const [filter, setFilter]           = useState('pendentes')
+  const [showForm, setShowForm]       = useState(false)
   const [editingTask, setEditingTask] = useState(null)
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedStatus, setSelectedStatus] = useState('pending')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [dark, setDark] = useState(() => {
     const saved = localStorage.getItem('theme')
-    if (saved) return saved === 'dark'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
+    if (saved) return saved !== 'light'
+    return true
   })
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark)
+    document.documentElement.classList.toggle('light', !dark)
     localStorage.setItem('theme', dark ? 'dark' : 'light')
   }, [dark])
 
-  const filteredTasks = tasks.filter(task => {
-    const catMatch = selectedCategory === 'all' || task.category === selectedCategory
-    const statusMatch =
-      selectedStatus === 'all' ||
-      (selectedStatus === 'pending' && !task.completed) ||
-      (selectedStatus === 'completed' && task.completed)
-    return catMatch && statusMatch
-  })
+  const today = getToday()
+
+  const completedToday = useMemo(
+    () => tasks.filter(t => t.concluidoEm?.slice(0, 10) === today).length,
+    [tasks, today]
+  )
+
+  const counts = useMemo(() => ({
+    todas:      tasks.length,
+    pendentes:  tasks.filter(t => t.status === 'pendente').length,
+    concluidas: tasks.filter(t => t.status === 'concluido').length,
+  }), [tasks])
+
+  const sortedTasks = useMemo(() => {
+    const filtered = tasks.filter(t => {
+      if (filter === 'pendentes')  return t.status === 'pendente'
+      if (filter === 'concluidas') return t.status === 'concluido'
+      return true
+    })
+
+    return [...filtered].sort((a, b) => {
+      if (filter === 'concluidas') {
+        return (b.concluidoEm || '').localeCompare(a.concluidoEm || '')
+      }
+      const aOver = isOverdue(a) ? 0 : 1
+      const bOver = isOverdue(b) ? 0 : 1
+      if (aOver !== bOver) return aOver - bOver
+      const pDiff = (PRIORITY_RANK[a.prioridade] ?? 1) - (PRIORITY_RANK[b.prioridade] ?? 1)
+      if (pDiff !== 0) return pDiff
+      const dDiff = a.data.localeCompare(b.data)
+      if (dDiff !== 0) return dDiff
+      return b.criadoEm.localeCompare(a.criadoEm)
+    })
+  }, [tasks, filter])
 
   function handleEdit(task) {
     setEditingTask(task)
@@ -39,9 +70,6 @@ export default function App() {
   }
 
   function handleSubmit(data) {
-    if (data.category && !categories.includes(data.category)) {
-      addCategory(data.category)
-    }
     if (editingTask) updateTask(editingTask.id, data)
     else addTask(data)
     setShowForm(false)
@@ -53,78 +81,69 @@ export default function App() {
     setEditingTask(null)
   }
 
-  function handleSelectCategory(cat) {
-    setSelectedCategory(cat)
-    setSidebarOpen(false)
-  }
+  const isMilestone = completedToday > 0 && completedToday % 3 === 0
 
-  function handleSelectStatus(status) {
-    setSelectedStatus(status)
-    setSidebarOpen(false)
-  }
-
-  function handleRemoveCategory(name) {
-    removeCategory(name)
-    if (selectedCategory === name) setSelectedCategory('all')
-  }
-
-  const pendingCount = filteredTasks.filter(t => !t.completed).length
-  const title = selectedCategory === 'all' ? 'Todas as Tarefas' : selectedCategory
+  const FILTERS = [
+    { key: 'todas',      label: 'Todas' },
+    { key: 'pendentes',  label: 'Pendentes' },
+    { key: 'concluidas', label: 'Concluídas' },
+  ]
 
   return (
     <div className="app">
-      {sidebarOpen && (
-        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
-      )}
-
-      <Sidebar
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={handleSelectCategory}
-        selectedStatus={selectedStatus}
-        onSelectStatus={handleSelectStatus}
-        tasks={tasks}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        onAddCategory={addCategory}
-        onRemoveCategory={handleRemoveCategory}
-      />
-
-      <main className="main">
-        <div className="main-header">
-          <button className="hamburger" onClick={() => setSidebarOpen(true)} aria-label="Abrir menu">
-            <span /><span /><span />
-          </button>
-          <div className="main-header-info">
-            <h1 className="main-title">{title}</h1>
-            <p className="main-subtitle">
-              {pendingCount === 0 ? 'Tudo em dia ✓' : `${pendingCount} pendente${pendingCount > 1 ? 's' : ''}`}
-            </p>
+      <header className="app-header">
+        <div className="app-header-top">
+          <h1 className="app-title">My<span>Tasks</span></h1>
+          <div className="header-actions">
+            <button
+              className="btn-theme"
+              onClick={() => setDark(d => !d)}
+              aria-label="Alternar tema"
+              title={dark ? 'Modo claro' : 'Modo escuro'}
+            >
+              {dark ? '☀️' : '🌙'}
+            </button>
+            <button
+              className="btn-add"
+              onClick={() => setShowForm(true)}
+              aria-label="Nova tarefa"
+            >
+              + Nova
+            </button>
           </div>
-          <button
-            className="btn-theme"
-            onClick={() => setDark(d => !d)}
-            aria-label="Alternar tema"
-            title={dark ? 'Modo claro' : 'Modo escuro'}
-          >
-            {dark ? '☀️' : '🌙'}
-          </button>
-          <button className="btn-add" onClick={() => setShowForm(true)} aria-label="Nova tarefa">+</button>
         </div>
 
-        <TaskList
-          tasks={filteredTasks}
-          onEdit={handleEdit}
-          onDelete={deleteTask}
-          onToggle={toggleTask}
-          onToggleSubtask={toggleSubtask}
-        />
-      </main>
+        {completedToday > 0 && (
+          <div className={`productivity-counter${isMilestone ? ' milestone' : ''}`}>
+            ✓ {completedToday} tarefa{completedToday !== 1 ? 's' : ''} concluída{completedToday !== 1 ? 's' : ''} hoje
+          </div>
+        )}
+
+        <div className="filter-tabs">
+          {FILTERS.map(f => (
+            <button
+              key={f.key}
+              className={`tab${filter === f.key ? ' active' : ''}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label}
+              <span className="tab-count">{counts[f.key]}</span>
+            </button>
+          ))}
+        </div>
+      </header>
+
+      <TaskList
+        tasks={sortedTasks}
+        filter={filter}
+        onToggle={toggleTask}
+        onDelete={deleteTask}
+        onEdit={handleEdit}
+      />
 
       {showForm && (
         <TaskForm
           task={editingTask}
-          categories={categories}
           onSubmit={handleSubmit}
           onClose={handleClose}
         />
