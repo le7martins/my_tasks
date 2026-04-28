@@ -1,19 +1,23 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MyTasks</title>
-    <meta name="description" content="Gerenciador de tarefas pessoal" />
-    <meta name="theme-color" content="#121212" />
-    <link rel="icon" type="image/svg+xml" href="/my_tasks/icons/icon.svg" />
-    <link rel="apple-touch-icon" href="/my_tasks/icons/icon-192.png" />
-    <script type="module" crossorigin src="/my_tasks/assets/index-BK3C9Dn0.js"></script>
-    <link rel="stylesheet" crossorigin href="/my_tasks/assets/index--meB4uVO.css">
-  <link rel="manifest" href="/my_tasks/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/my_tasks/registerSW.js"></script></head>
-  <body>
-    <div id="root"></div>
-    <!-- Google Identity Services — loaded async, only used when Google Calendar sync is triggered -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-  </body>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>My Tasks</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>Minhas Tarefas</h1>
+
+    <div class="input-area">
+      <input type="text" id="inputTask" placeholder="Digite uma tarefa">
+      <button id="btnAdd">Adicionar</button>
+    </div>
+
+    <ul id="lista"></ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
 </html>
