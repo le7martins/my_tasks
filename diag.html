@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyTasks - Diagnóstico</title>
+  <style>
+    body { background:#111; color:#eee; padding:20px; font-family:monospace; font-size:13px; }
+    h3 { color:#fff; margin-top:0; }
+    .ok { color:#4f4; }
+    .err { color:#f44; font-weight:bold; }
+    .warn { color:#fa4; }
+    #root { border:1px solid #444; padding:8px; margin-top:12px; min-height:30px; }
+  </style>
+</head>
+<body>
+<h3>MyTasks — Diagnóstico</h3>
+<div id="out">⏳ Iniciando testes...</div>
+<div id="root-label" style="margin-top:12px;color:#888">React root (vazio = problema):</div>
+<div id="root"></div>
+<script type="module">
+const out = document.getElementById('out');
+const lines = [];
+const log = (msg, cls) => {
+  lines.push(`<span class="${cls||''}">${msg}</span>`);
+  out.innerHTML = lines.join('<br>');
+};
+
+window.addEventListener('unhandledrejection', e => {
+  log('❌ Promise rejeitada: ' + (e.reason?.message || e.reason), 'err');
+});
+
+// 1. Fetch JS
+try {
+  const r = await fetch('/my_tasks/assets/index-BK3C9Dn0.js', {cache:'no-cache'});
+  const ct = r.headers.get('content-type') || '(sem content-type)';
+  const text = await r.text();
+  if (r.ok) {
+    log(`✅ JS: HTTP ${r.status} · ${text.length} bytes · ${ct}`, 'ok');
+    if (!ct.includes('javascript')) log('⚠️  MIME type não é javascript — browser pode rejeitar módulo', 'warn');
+  } else {
+    log(`❌ JS: HTTP ${r.status} ${r.statusText}`, 'err');
+  }
+} catch(e) { log('❌ JS fetch erro: ' + e.message, 'err'); }
+
+// 2. Fetch CSS
+try {
+  const r = await fetch('/my_tasks/assets/index--meB4uVO.css', {cache:'no-cache'});
+  log(`${r.ok?'✅':'❌'} CSS: HTTP ${r.status} · ${r.headers.get('content-type')||'?'}`, r.ok?'ok':'err');
+} catch(e) { log('❌ CSS erro: ' + e.message, 'err'); }
+
+// 3. Dynamic import of the React bundle
+log('⏳ Importando módulo JS (pode demorar)...');
+try {
+  await import('/my_tasks/assets/index-BK3C9Dn0.js');
+  log('✅ Módulo importado sem exceção', 'ok');
+} catch(e) {
+  log('❌ ERRO no módulo: ' + e.name + ': ' + e.message, 'err');
+  if (e.stack) {
+    const line = e.stack.split('\n').slice(0,3).join(' | ');
+    log('Stack: ' + line, 'err');
+  }
+}
+
+// 4. Check if React mounted
+await new Promise(r => setTimeout(r, 2000));
+const root = document.getElementById('root');
+const mounted = root && root.childElementCount > 0;
+log(mounted ? '✅ React montou no #root' : '❌ #root está vazio — React NÃO montou', mounted?'ok':'err');
+log('✅ Diagnóstico concluído', 'ok');
+</script>
+</body>
+</html>
