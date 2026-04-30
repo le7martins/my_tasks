@@ -1,18 +1,1 @@
-// Self-destructing SW: clears all caches, reloads all open tabs, unregisters
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', event => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => caches.delete(k)));
-    await self.clients.claim();
-    const clients = await self.clients.matchAll({type: 'window'});
-    await Promise.all(clients.map(c => {
-      const url = new URL(c.url);
-      if (!url.searchParams.has('swcleared')) {
-        url.searchParams.set('swcleared', '1');
-        return c.navigate(url.toString());
-      }
-    }));
-    await self.registration.unregister();
-  })());
-});
+if(!self.define){let e,i={};const n=(n,c)=>(n=new URL(n+".js",c).href,i[n]||new Promise(i=>{if("document"in self){const e=document.createElement("script");e.src=n,e.onload=i,document.head.appendChild(e)}else e=n,importScripts(n),i()}).then(()=>{let e=i[n];if(!e)throw new Error(`Module ${n} didn’t register its module`);return e}));self.define=(c,o)=>{const s=e||("document"in self?document.currentScript.src:"")||location.href;if(i[s])return;let r={};const t=e=>n(e,s),l={module:{uri:s},exports:r,require:t};i[s]=Promise.all(c.map(e=>l[e]||t(e))).then(e=>(o(...e),r))}}define(["./workbox-3e722498"],function(e){"use strict";self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"registerSW.js",revision:"b02e41351b3cf517060dd4ca5ac873b7"},{url:"index.html",revision:"9256639f3e2da2c76a3672cc260c406d"},{url:"icons/icon.svg",revision:"60c3b8850a296755c19b35be0086f445"},{url:"icons/icon-512.png",revision:"686df2f726aa6a546aefb8f6a31c5d68"},{url:"icons/icon-192.png",revision:"a6bc5fa3b38debd5d63fc37a9c0386ce"},{url:"assets/index-BcDZ8Jle.js",revision:null},{url:"assets/index-9kIQRg56.css",revision:null},{url:"icons/icon-192.png",revision:"a6bc5fa3b38debd5d63fc37a9c0386ce"},{url:"icons/icon-512.png",revision:"686df2f726aa6a546aefb8f6a31c5d68"},{url:"icons/icon.svg",revision:"60c3b8850a296755c19b35be0086f445"},{url:"manifest.webmanifest",revision:"ca7cd16e1cd40b1329eec0ffba6d551b"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(new e.NavigationRoute(e.createHandlerBoundToURL("index.html"))),e.registerRoute(/^https:\/\/(accounts\.google\.com|apis\.google\.com|www\.googleapis\.com)\//,new e.NetworkOnly,"GET")});
